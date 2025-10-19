@@ -1,0 +1,145 @@
+﻿@model IEnumerable<MiVeterinaria.Models.UsuarioDb>
+
+@{
+    ViewBag.Title = "Inicio";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registro Usuarios</title>
+    <link rel="stylesheet" type="text/css" href="~/Content/styles.css" />
+</head>
+<body style="padding: 0px;">
+    <div class="row">
+        <div class="animate__animated animate__backInRight col-md-8 offset-2">
+            <div class="card-body">
+                <section>
+                    <form id="usuarioForm">
+                        <div class="card-header">
+                            <h3>  <strong>Registro Usuarios</strong> </h3>
+                        </div>
+                        <hr />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group">
+                            <input placeholder="Nombre" id="Nombre" type="text" maxlength="100" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <input placeholder="Fecha Nacimiento" id="fechaNacimiento" type="date" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <select id="sexo" class="form-control">
+                                <option value="" disabled selected>Seleccione el Tipo de sexo</option>
+                                <option value="Hombre">Hombre</option>
+                                <option value="Mujer">Mujer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="button" class="btn btn-primary" onclick="crearUsuario()" value="Registrar"/> |
+                            <input type="button" class="btn btn-primary" onclick="limpiarForm()" value="Cancelar" />
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script type="text/javascript" charset="utf-8">
+    var listaProducto = [];
+    let idUsuario = '';
+
+    function crearUsuario() {
+        var response = validarDataUsuario();
+        if (response.valid) {
+            var nombre = $("#Nombre").val();
+            var fechaNacimiento = $("#fechaNacimiento").val();
+            var sexo = $("#sexo").val();
+
+            // Crear un objeto con los datos
+            var parametro = {
+                Nombre: nombre,
+                FechaNacimiento: fechaNacimiento,
+                Sexo: sexo,
+            };
+                        
+            $.ajax({
+                url: "/Home/InsertarUsuario",
+                method: 'POST',
+                data: JSON.stringify(parametro),
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+                    console.log(listaProducto);
+                    if (data) {
+                            $('#modalProducto').modal('hide');
+                            limpiarForm();
+                            Swal.fire(
+                                'Registrado!',
+                                data.message,
+                                'success');
+                    } else {
+                            Swal.fire(
+                                'Opps!',
+                                response.Mensaje,
+                                'error');
+                    }
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    Swal.fire(
+                            'Opps!',
+                            response.Mensaje,
+                            'error');
+                    console.error(xhr, textStatus, errorThrown);
+                }
+            });
+            
+        }
+        else {
+            Swal.fire(
+                'Opps!',
+                response.Mensaje,
+                'error');
+        }
+    }
+
+    function validarDataUsuario() {
+        var response = {
+            valid: true,
+            Mensaje: "",
+        };
+
+        // Validar Nombre
+        if ($("#Nombre").val().trim() === "") {
+            response.valid = false
+            response.Mensaje = "El nombre es obligatorio."
+            return response;
+        }
+
+        // Validar Caracteristica
+        if ($("#fechaNacimiento").val().trim() === "") {
+            response.valid = false
+            response.Mensaje = "La fecha de nacimiento es obligatorio."
+            return response;
+        }
+
+        // Validar Valor
+        if ($("#sexo").val().trim() === "") {
+            response.valid = false
+            response.Mensaje = "El sexo es obligatorio."
+            return response;
+        }
+
+        return response;
+    };
+
+    function limpiarForm() {
+        $('#Nombre').val("");
+        $('#fechaNacimiento').val("")
+        $('#sexo').val("")
+    }
+
+</script>
